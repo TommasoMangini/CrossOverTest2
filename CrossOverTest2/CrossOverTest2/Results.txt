@@ -1,1 +1,3 @@
 line 1:TestInputFile1
+line 3:TestInputFile2
+line 4:TestInputFile3

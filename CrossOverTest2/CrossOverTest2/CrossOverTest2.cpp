@@ -185,15 +185,16 @@ static pplx::task<void> find_matches_in_file(const string_t &fileName, const std
 static pplx::task<void> write_matches_to_file(const string_t &fileName, matched_lines results, sql::Connection *con)
 {
 	// Create a shared pointer to the matched_lines structure to copying repeatedly.
-	auto sharedResults = std::make_shared<matched_lines>(std::move(results));
+	auto sharedResults = std::make_shared<matched_lines>(std::move(results));	
 
 	return file_stream<char>::open_ostream(fileName, std::ios::trunc).then([=](concurrency::streams::basic_ostream<char> outFile)
 	{
 		auto currentIndex = std::make_shared<size_t>(0);
+		
+		auto i = std::make_shared<int>(0);
+
 		return ::do_while([=]()
 		{
-
-			int i = 0;
 
 			if (*currentIndex >= sharedResults->size())
 			{
@@ -209,7 +210,7 @@ static pplx::task<void> write_matches_to_file(const string_t &fileName, matched_
 			pstmt = con->prepareStatement("INSERT INTO TestColumn1(id, id2) VALUES (?, ?)");
 			try
 			{
-				pstmt->setInt(1, i);				
+				pstmt->setInt(1, *i);				
 				
 				std::string s = lineData.collection();
 
@@ -226,7 +227,7 @@ static pplx::task<void> write_matches_to_file(const string_t &fileName, matched_
 			}
 			delete pstmt;
 
-			i++;
+			(*i)++;
 
 			return outFile.print("\r\n").then([](size_t)
 			{
